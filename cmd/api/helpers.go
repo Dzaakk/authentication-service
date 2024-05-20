@@ -7,8 +7,15 @@ import (
 	"net/http"
 )
 
+type jsonResponse struct {
+	Error   bool   `json:"error"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
+}
+
+// readJSON tries to read the body of a request and converts it into JSON
 func (app *Config) readJSON(w http.ResponseWriter, r *http.Request, data any) error {
-	maxBytes := 1048576 // one mgabyte
+	maxBytes := 1048576 // one megabyte
 
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
 
@@ -55,10 +62,9 @@ func (app *Config) errorJSON(w http.ResponseWriter, err error, status ...int) er
 		statusCode = status[0]
 	}
 
-	var payLoad jsonResponse
-	payLoad.Error = true
-	payLoad.Message = err.Error()
+	var payload jsonResponse
+	payload.Error = true
+	payload.Message = err.Error()
 
-	return app.writeJSON(w, statusCode, payLoad)
-
+	return app.writeJSON(w, statusCode, payload)
 }
